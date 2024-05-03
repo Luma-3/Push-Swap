@@ -6,7 +6,7 @@
 #    By: jbrousse <jbrousse@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/05 20:01:31 by jbrousse          #+#    #+#              #
-#    Updated: 2024/01/31 13:52:48 by jbrousse         ###   ########.fr        #
+#    Updated: 2024/05/03 13:16:42 by jbrousse         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,57 +14,61 @@
 ##`COMPILER	##
 ##############
 
-CC		=	gcc
-CFLAGS	=	-Wall -Werror -Wextra -g3 -O3
+CC		=	cc
+CFLAGS	=	-Wall -Werror -Wextra -O3
 
 
 ###############
 ##	  LIB	 ##
 ###############
 
-LIBFT_DIR	=	libft/
-LIBFT		=	$(LIBFT_DIR)libft.a
+LIB_PATH		=	lib/
 
-STACKFT_DIR	=	StackFT/
-STACKFT		=	$(STACKFT_DIR)stackft.a
+LIBFT_PATH		=	$(LIB_PATH)libft/
+LIBFT			=	$(LIBFT_PATH)libft.a
+LIBFT_INC		=	$(LIBFT_PATH)includes/
+
+STACKFT_PATH	=	$(LIB_PATH)stackft/
+STACKFT			=	$(STACKFT_PATH)stackft.a
+STACKFT_INC		=	$(STACKFT_PATH)includes/
 
 ###############
 ##	INCLUDE	 ##
 ###############
 
-INCLUDE_DIR	=	include/
-INCLUDES	=	-I includes \
-				-I $(LIBFT_DIR)includes \
-				-I $(STACKFT_DIR)includes
+INC		=	./inc/			\
+			./$(LIBFT_INC)	\
+			./$(STACKFT_INC)
+INCLUDE	=	$(addprefix -I, $(INC))
 			
 ##############
 ##  SOURCE	##
 ##############
 
-SRC_DIR			=	sources/
-SRC_UTILS		=	parse.c		\
-					pslang.c	\
-					utils.c
+SRC_DIR		=	src/
+SRC_UTILS	=	parse.c		\
+				pslang.c	\
+				utils.c
 
-SRC_MANDATORY_DIR	=	mandatory/
-SRC_MANDATORY_LIST	=	divide_algo.c	\
-						medians.c		\
-						ps_utils.c		\
-						push_swap.c		\
-						turkish_algo.c	\
-						turkish_utils.c
-SRC_MANDATORY_PRE	=	$(addprefix $(SRC_MANDATORY_DIR), $(SRC_MANDATORY_LIST))
+SRC_M_DIR	=	mandatory/
+SRC_M_LIST	=	divide_algo.c	\
+				medians.c		\
+				ps_utils.c		\
+				push_swap.c		\
+				turkish_algo.c	\
+				turkish_utils.c
+SRC_M_PRE	=	$(addprefix $(SRC_M_DIR), $(SRC_M_LIST))
 
-SRC_BONUS_DIR		=	bonus/
-SRC_BONUS_LIST		=	checker_bonus.c		\
-						reader_bonus.c
-SRC_BONUS_PRE		=	$(addprefix $(SRC_BONUS_DIR), $(SRC_BONUS_LIST))
+SRC_B_DIR	=	bonus/
+SRC_B_LIST	=	checker_bonus.c		\
+				reader_bonus.c
+SRC_B_PRE	=	$(addprefix $(SRC_B_DIR), $(SRC_B_LIST))
 
 
-SRC_BONUS			=	$(addprefix $(SRC_DIR), $(SRC_BONUS_PRE))		\
+SRC_BONUS			=	$(addprefix $(SRC_DIR), $(SRC_B_PRE))	\
 						$(addprefix $(SRC_DIR), $(SRC_UTILS))
 
-SRC_MANDATORY		=	$(addprefix $(SRC_DIR), $(SRC_MANDATORY_PRE))	\
+SRC_MANDATORY		=	$(addprefix $(SRC_DIR), $(SRC_M_PRE))	\
 						$(addprefix $(SRC_DIR), $(SRC_UTILS))
 			
 
@@ -76,10 +80,10 @@ NAME		=	push_swap
 NAME_BONUS	=	checker
 
 OBJ_DIR	=	obj/
-OBJ		=	$(addprefix $(OBJ_DIR), $(SRC_MANDATORY_PRE:.c=.o))	\
+OBJ		=	$(addprefix $(OBJ_DIR), $(SRC_M_PRE:.c=.o))	\
 			$(addprefix $(OBJ_DIR), $(SRC_UTILS:.c=.o))
 
-OBJ_BONUS = $(addprefix $(OBJ_DIR), $(SRC_BONUS_PRE:.c=.o))		\
+OBJ_BONUS = $(addprefix $(OBJ_DIR), $(SRC_B_PRE:.c=.o))	\
 			$(addprefix $(OBJ_DIR), $(SRC_UTILS:.c=.o))
 
 ##############
@@ -100,21 +104,17 @@ all : $(LIBFT) $(STACKFT) $(NAME)
 bonus : $(LIBFT) $(STACKFT) $(NAME_BONUS)
 
 $(LIBFT) : 
-	@make -sC $(LIBFT_DIR) all
+	@make -sC $(LIBFT_PATH)
 
 $(STACKFT) : 
-	@make -sC $(STACKFT_DIR) all
+	@make -sC $(STACKFT_PATH)
 
-$(OBJ_DIR) :
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(OBJ_DIR)$(SRC_BONUS_DIR)
-	@mkdir -p $(OBJ_DIR)$(SRC_MANDATORY_DIR)
-
-$(OBJ_DIR)%.o : $(SRC_DIR)%.c $(OBJ_DIR)
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(OBJ_DIR)%.o : $(SRC_DIR)%.c
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
 $(NAME) : $(OBJ)
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(NAME) $(OBJ) $(LIBFT) $(STACKFT)
+	@$(CC) $(CFLAGS) $(INCLUDE) -o $(NAME) $(OBJ) $(LIBFT) $(STACKFT)
 	@echo "$(COLOR_GREEN)COMPILE DONE !$(COLOR_RESET)"
 
 $(NAME_BONUS) : $(OBJ_BONUS)
@@ -123,19 +123,19 @@ $(NAME_BONUS) : $(OBJ_BONUS)
 
 clean :
 	@rm -rf $(OBJ_DIR)
-	@make -sC $(LIBFT_DIR) clean
-	@make -sC $(STACKFT_DIR) clean
+	@make -sC $(LIBFT_PATH) clean
+	@make -sC $(STACKFT_PATH) clean
 
 fclean : clean
 	@rm -f norme_log
 	@rm -f $(NAME)
 	@rm -f $(NAME_BONUS)
-	@make -sC $(LIBFT_DIR) fclean
-	@make -sC $(STACKFT_DIR) fclean
+	@make -sC $(LIBFT_PATH) fclean
+	@make -sC $(STACKFT_PATH) fclean
 
 norme:
 	@echo "$(COLOR_BLUE)Norminette...$(COLOR_RESET)"
-	@norminette $(SRC_DIR) $(INCLUDES_DIR) $(LIBFT_DIR) $(STACKFT_DIR) > norme_log ; \
+	@norminette $(SRC_DIR) $(INC) $(LIBFT_PATH) $(STACKFT_PATH) > norme_log ; \
 	if grep -q "Error" norme_log; then \
 		echo "$(COLOR_RED)Norme : KO!$(COLOR_RESET)"; \
 	else \

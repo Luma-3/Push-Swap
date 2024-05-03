@@ -1,0 +1,6 @@
+[submodule "lib/libft"]
+	path = lib/libft
+	url = https://github.com/Luma-3/libft.git
+[submodule "lib/stackft"]
+	path = lib/stackft
+	url = https://github.com/Luma-3/StackFT.git
